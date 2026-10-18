@@ -1,6 +1,6 @@
 # TODO
 - [ ] Implement basic asset copy, html generation and file operations
-    + [ ] Markdown -> HTML function
+    + [ ] Markdown -> HTML function: start with the most naive implementation. Can always reimplement with extensions, options, context, etc.
     + [ ] Recursive directory copy
     + [ ] Asset copy
 - [ ] Early CLI implementaion
