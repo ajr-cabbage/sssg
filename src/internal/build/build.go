@@ -2,9 +2,14 @@ package build
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 
+	cp "github.com/nmrshll/go-cp"
 	"github.com/yuin/goldmark"
 )
 
@@ -16,16 +21,85 @@ type Config struct {
 }
 
 func (c *Config) Build() error {
-	// copy assets to target directory
-	// call a recursive directory walk function
+	err := copyAssets(c.AssetPath, c.TargetPath+"/assets/")
+	if err != nil {
+		return err
+	}
+	htmlTemplate, err := os.ReadFile(c.TemplatePath)
+	if err != nil {
+		return err
+	}
+	err = generateDirectory(c.SourcePath, path.Join(c.TargetPath, "docs"), string(htmlTemplate))
+	return nil
+}
+
+func copyAssets(sourceDirectory, targetDirectory string) error {
+	_, err := os.Stat(targetDirectory)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = os.MkdirAll(targetDirectory, 0744)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	sourceDirContents, err := os.ReadDir(sourceDirectory)
+	if err != nil {
+		return err
+	}
+	for _, item := range sourceDirContents {
+		itemSourcePath := path.Join(sourceDirectory, item.Name())
+		itemTargetPath := path.Join(targetDirectory, item.Name())
+		if item.IsDir() {
+			copyAssets(itemSourcePath, itemTargetPath)
+		} else {
+			err := cp.CopyFile(itemSourcePath, itemTargetPath)
+			if err != nil {
+				fmt.Printf("Copy file error: %s\n", err.Error())
+			}
+		}
+	}
 	return nil
 }
 
 func generateDirectory(sourceDirectory, targetDirectory, template string) error {
-	// this function can make good use of go funcs
-	// both recursive calls and calls to GeneratePage can run without mutexes
-	// recursively walk the source directory
-	// base case is finding an actual file, checking if it's MD and calling GeneratePage
+	_, err := os.Stat(targetDirectory)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = os.MkdirAll(targetDirectory, 0744)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	sourceDirContents, err := os.ReadDir(sourceDirectory)
+	if err != nil {
+		return err
+	}
+	for _, item := range sourceDirContents {
+		itemSourcePath := path.Join(sourceDirectory, item.Name())
+		itemTargetPath := path.Join(targetDirectory, item.Name())
+		if item.IsDir() {
+			err = generateDirectory(itemSourcePath, itemTargetPath, template)
+			if err != nil {
+				return err
+			}
+		} else {
+			ext := filepath.Ext(itemSourcePath)
+			if strings.ToLower(ext) != ".md" {
+				fmt.Printf("Invalid file ext {%s} for: %s", ext, itemSourcePath)
+				continue
+			}
+			err := generatePage(itemSourcePath, itemTargetPath, template)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -39,7 +113,7 @@ func generatePage(contentPath, targetPath, template string) error {
 		return err
 	}
 	htmlDoc := strings.Replace(template, "{{ Content }}", html, 1)
-	err = os.WriteFile(targetPath, []byte(htmlDoc), 0644)
+	err = os.WriteFile(targetPath+".html", []byte(htmlDoc), 0644)
 	if err != nil {
 		return err
 	}
@@ -55,6 +129,7 @@ func mdToHTML(md []byte) (string, error) {
 	return buf.String(), nil
 }
 
+// TODO
 func getTitle(md string) (string, error) {
 	return "", nil
 }
