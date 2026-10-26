@@ -9,23 +9,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ajr-cabbage/sssg/src/internal/config"
 	cp "github.com/nmrshll/go-cp"
 	"github.com/yuin/goldmark"
 )
 
-type Config struct {
-	SourcePath   string
-	TargetPath   string
-	AssetPath    string
-	TemplatePath string
-}
-
-func (c *Config) Build() error {
+func Build(c *config.Config) error {
 	err := copyAssets(c.AssetPath, c.TargetPath+"/assets/")
 	if err != nil {
 		return err
 	}
-	htmlTemplate, err := os.ReadFile(c.TemplatePath)
+	htmlTemplate, err := os.ReadFile(path.Join(c.TemplatePath, "default.html"))
 	if err != nil {
 		return err
 	}
