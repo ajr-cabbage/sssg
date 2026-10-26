@@ -3,3 +3,4 @@ target/
 templates/
 content/
 themes/
+config.json
