@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -15,15 +14,19 @@ import (
 )
 
 func Build(c *config.Config) error {
+	ok := config.VerifyConfig(*c)
+	if !ok {
+		return errors.New("Invalid or missing configuration\n'sssg init' to initialize a project in the current directory\n")
+	}
 	err := copyAssets(c.AssetPath, c.TargetPath+"/assets/")
 	if err != nil {
 		return err
 	}
-	htmlTemplate, err := os.ReadFile(path.Join(c.TemplatePath, "default.html"))
+	htmlTemplate, err := os.ReadFile(filepath.Join(c.TemplatePath, "default.html"))
 	if err != nil {
 		return err
 	}
-	err = generateDirectory(c.SourcePath, path.Join(c.TargetPath, "docs"), string(htmlTemplate))
+	err = generateDirectory(c.SourcePath, filepath.Join(c.TargetPath, "docs"), string(htmlTemplate))
 	return nil
 }
 
@@ -44,8 +47,8 @@ func copyAssets(sourceDirectory, targetDirectory string) error {
 		return err
 	}
 	for _, item := range sourceDirContents {
-		itemSourcePath := path.Join(sourceDirectory, item.Name())
-		itemTargetPath := path.Join(targetDirectory, item.Name())
+		itemSourcePath := filepath.Join(sourceDirectory, item.Name())
+		itemTargetPath := filepath.Join(targetDirectory, item.Name())
 		if item.IsDir() {
 			copyAssets(itemSourcePath, itemTargetPath)
 		} else {
@@ -75,8 +78,8 @@ func generateDirectory(sourceDirectory, targetDirectory, template string) error 
 		return err
 	}
 	for _, item := range sourceDirContents {
-		itemSourcePath := path.Join(sourceDirectory, item.Name())
-		itemTargetPath := path.Join(targetDirectory, item.Name())
+		itemSourcePath := filepath.Join(sourceDirectory, item.Name())
+		itemTargetPath := filepath.Join(targetDirectory, item.Name())
 		if item.IsDir() {
 			err = generateDirectory(itemSourcePath, itemTargetPath, template)
 			if err != nil {

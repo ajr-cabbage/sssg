@@ -10,18 +10,6 @@ import (
 )
 
 func main() {
-	/*conf := build.Config{
-		SourcePath:   "./content/docs/",
-		TargetPath:   "./target/",
-		AssetPath:    "./content/assets/",
-		TemplatePath: "./templates/default.html",
-	}
-	err := conf.Build()
-	err := initialize.Initialize()
-	if err != nil {
-		log.Fatal(err)
-		} */
-
 	if len(os.Args) < 2 {
 		fmt.Println("sssg - The Small, Shitty, (static) Site Generator")
 		fmt.Println("'sssg help' for usage information")
@@ -44,5 +32,7 @@ func main() {
 				log.Fatal(err)
 			}
 		}
+	} else {
+		fmt.Printf("Unknown command: '%s'\n'sssg help' for usage information\n", os.Args[1])
 	}
 }

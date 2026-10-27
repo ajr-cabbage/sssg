@@ -9,8 +9,12 @@
     + [ ] copy default html template
     + [ ] figure out how to save these on host machine during install, but for now, just get the directories and config made
 - [ ] Early CLI implementaion
-    + [ ] "init" command
-    + [ ] "build" command
+    + [x] "init" command
+    + [x] "build" command
+    + [x] "config" command
+    + [ ] "help" command
+      + [x] main help
+      + [ ] command help
     + [ ] skeleton "serve"
 - [ ] HTTP Server
     + [ ] only GET on root of target folder

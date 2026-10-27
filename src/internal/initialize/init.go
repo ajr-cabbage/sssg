@@ -14,6 +14,10 @@ func Initialize() error {
 	}
 	if isDefault {
 		fmt.Println("Initializing with default configuration...")
+		err = config.WriteConfig(conf)
+		if err != nil {
+			return err
+		}
 	} else {
 		fmt.Println("Initializing with configuration from 'config.json'...")
 	}

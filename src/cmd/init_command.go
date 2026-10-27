@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/ajr-cabbage/sssg/src/internal/config"
+	"github.com/ajr-cabbage/sssg/src/internal/initialize"
 )
 
-func initCommand(conf *config.Config, _ []string) error {
-	fmt.Println("TESTING HELP INIT CALLBACK")
-	return nil
+func initCommand(_ *config.Config, _ []string) error {
+	err := initialize.Initialize()
+	return err
 }

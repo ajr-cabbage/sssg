@@ -19,20 +19,25 @@ sssg <command> -<options> <parameters>
     + no flags - build all markdown in the content directory
     + -f <filename.md> - build only the specified markdown file
 - ```sssg config```
-    + -set <key> <value> - modify config.json through via cli
+    + set <key> <value> - modify config.json through via cli
+    + get <key> - print config value to the console
 - ```sssg serve```
     + no flags - serve your target directory over http on the port specified in config.json
     + -p <port-num> - override the default port
     + -d - start server deteched from current shell session
 - ```ssssg theme```
     + <theme-name.css> - change themes live - no server restart requried
+- ```sssg help```
+    + no params - list available commands with description
+    + <command> - show command usage
 
 ## Configuration
 config.json - modify directly or edit single values via cli
-- "content" - the source directory for your markdown files
-- "target" - the destination directory for generated html
-- "assets" - directory for html templates, css themes, images, etc.
-- "theme" - css filename to use
+- "source_path" - the source directory for your markdown files
+- "target_path" - the destination directory for generated html
+- "assets_path" - directory for images and other content
+- "template_path" - directory for html templates
+- "theme_path" - css directory to use
 - "port" - default http port
 
 ## Contributing
