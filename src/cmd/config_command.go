@@ -7,13 +7,13 @@ import (
 	"github.com/ajr-cabbage/sssg/src/internal/config"
 )
 
-func configCommand(conf *config.Config, args []string) error {
+func configCommand(conf config.Config, args []string) error {
 	if len(args) < 2 {
 		return errors.New("Insufficient arguments. See 'sssg help config' for usage.")
 	}
 	switch args[0] {
 	case "get":
-		val := config.GetConfigValue(*conf, args[1])
+		val := config.GetConfigValue(conf, args[1])
 		if val == "" {
 			return fmt.Errorf("Invalid config key: '%s'", args[1])
 		}
@@ -22,7 +22,7 @@ func configCommand(conf *config.Config, args []string) error {
 		if len(args) != 3 {
 			return errors.New("Wrong number of arguments. See 'sssg help config' for usage.")
 		}
-		err := config.SetConfig(*conf, args[1], args[2])
+		err := config.SetConfig(conf, args[1], args[2])
 		if err != nil {
 			return err
 		}

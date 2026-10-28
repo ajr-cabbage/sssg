@@ -19,9 +19,9 @@ type Config struct {
 
 func GetConfig() (Config, bool, error) {
 	defaultConfig := Config{
-		SourcePath:   "./content/docs/",
+		SourcePath:   "./content/",
 		TargetPath:   "./target/",
-		AssetPath:    "./content/assets/",
+		AssetPath:    "./assets/",
 		TemplatePath: "./templates/",
 		ThemePath:    "./themes/",
 		Port:         8080,
@@ -134,10 +134,6 @@ func VerifyConfig(c Config) bool {
 		return false
 	}
 	_, err = os.Stat(c.SourcePath)
-	if err != nil {
-		return false
-	}
-	_, err = os.Stat(c.TargetPath)
 	if err != nil {
 		return false
 	}

@@ -22,12 +22,12 @@ func main() {
 	cmd, ok := cmd.GetCommands()[os.Args[1]]
 	if ok {
 		if len(os.Args) > 2 {
-			err := cmd.Callback(&conf, os.Args[2:])
+			err := cmd.Callback(conf, os.Args[2:])
 			if err != nil {
 				log.Fatal(err)
 			}
 		} else {
-			err := cmd.Callback(&conf, []string{})
+			err := cmd.Callback(conf, []string{})
 			if err != nil {
 				log.Fatal(err)
 			}
