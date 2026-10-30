@@ -3,4 +3,5 @@ target/
 templates/
 content/
 themes/
+assets/
 config.json

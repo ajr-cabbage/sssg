@@ -118,19 +118,19 @@ func generateDirectory(sourceDirectory, targetDirectory, template string) (*dire
 				dirTree.children = append(dirTree.children, subTree)
 				dirTree.mu.Unlock()
 			} else {
-				fileNode := directoryNode{
-					name:  item.Name(),
-					path:  itemTargetPath,
-					isDir: false,
-				}
-				dirTree.mu.Lock()
-				dirTree.children = append(dirTree.children, &fileNode)
-				dirTree.mu.Unlock()
 				ext := filepath.Ext(itemSourcePath)
 				if strings.ToLower(ext) != ".md" {
 					fmt.Printf("Invalid file ext {%s} for: %s", ext, itemSourcePath)
 					return
 				}
+				fileNode := directoryNode{
+					name:  item.Name()[:len(item.Name())-len(ext)],
+					path:  itemTargetPath[:len(itemTargetPath)-len(ext)] + ".html",
+					isDir: false,
+				}
+				dirTree.mu.Lock()
+				dirTree.children = append(dirTree.children, &fileNode)
+				dirTree.mu.Unlock()
 				err := generatePage(itemSourcePath, itemTargetPath[:len(itemTargetPath)-len(ext)], template)
 				if err != nil {
 					fmt.Println(err)
@@ -140,7 +140,6 @@ func generateDirectory(sourceDirectory, targetDirectory, template string) (*dire
 		})
 	}
 	wg.Wait()
-	//fmt.Println(dirTree)
 	return &dirTree, nil
 }
 
@@ -149,11 +148,13 @@ func generatePage(contentPath, targetPath, template string) error {
 	if err != nil {
 		return err
 	}
+	title := getTitle(string(md))
 	html, err := mdToHTML(md)
 	if err != nil {
 		return err
 	}
-	htmlDoc := strings.Replace(template, "{{ Content }}", html, 1)
+	htmlDoc := strings.Replace(template, "{{ Title }}", title, 1)
+	htmlDoc = strings.Replace(htmlDoc, "{{ Content }}", html, 1)
 	err = os.WriteFile(targetPath+".html", []byte(htmlDoc), 0644)
 	if err != nil {
 		return err
@@ -180,22 +181,36 @@ func mdToHTML(md []byte) (string, error) {
 	return buf.String(), nil
 }
 
-// TODO
-func getTitle(md string) (string, error) {
-	return "", nil
+func getTitle(md string) string {
+	for line := range strings.SplitSeq(md, "\n") {
+		if len(line) >= 3 && line[:2] == "# " {
+			return line[2:]
+		}
+		if len(line) >= 4 && line[:3] == "## " {
+			return line[3:]
+		}
+	}
+	return "Untitled"
 }
 
 func printTree(node *directoryNode) string {
 	var treeString string
 	if !node.isDir {
-		treeString += fmt.Sprintf("|- %s\n", node.name)
+		trimmedPath, ok := strings.CutPrefix(node.path, "target/")
+		if ok {
+			treeString += fmt.Sprintf(`<p> - <a href="%s">%s</a></p>`, trimmedPath, node.name)
+		} else {
+			treeString += fmt.Sprintf(`<p> - <a href="%s">%s</a></p>`, node.path, node.name)
+		}
 		return treeString
 	}
 	if node.children == nil {
-		treeString += fmt.Sprintf("+ %s\n", node.name)
+		treeString += fmt.Sprintf("<h3># %s</h3>", node.name)
 		return treeString
 	}
-	treeString += fmt.Sprintf("+ %s\n", node.name)
+	if node.name != "root" {
+		treeString += fmt.Sprintf("<h3># %s</h3>", node.name)
+	}
 	node.mu.Lock()
 	for _, child := range node.children {
 		treeString += printTree(child)

@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ajr-cabbage/sssg/src/cmd"
 	"github.com/ajr-cabbage/sssg/src/internal/config"
 )
 
 func main() {
+	start := time.Now()
 	if len(os.Args) < 2 {
 		fmt.Println("sssg - The Small, Shitty, (static) Site Generator")
 		fmt.Println("'sssg help' for usage information")
@@ -35,4 +37,5 @@ func main() {
 	} else {
 		fmt.Printf("Unknown command: '%s'\n'sssg help' for usage information\n", os.Args[1])
 	}
+	fmt.Printf("Completed in %s\n", time.Since(start))
 }

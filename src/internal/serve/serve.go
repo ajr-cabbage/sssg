@@ -7,7 +7,9 @@ import (
 
 func Serve(path string, port int) error {
 	fs := http.FileServer(http.Dir(path))
-	fmt.Printf("Serving '%s' on Port '%d'\nCtrl+c to exit...\n", path, port)
+	fmt.Printf("Serving '%s' on Port '%d'\n", path, port)
+	fmt.Printf("Navigate to http://localhost:%d\n", port)
+	fmt.Println("Ctrl+c to exit...")
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), fs)
 	if err != nil {
 		return err

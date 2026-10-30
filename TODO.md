@@ -19,20 +19,26 @@
 - [ ] HTTP Server
     + [x] only GET on root of target folder - just doing file server to start
     + [x] wire in "serve" command
-    + [ ] implement "detatch" flag
+    + [ ] **ABANDONED** implement "detatch" flag
       + want to be able to detatch using command flag or with keystroke if flag is forgotten
       + do it natively in the application, so this can be cross platform
+      + NOTE: after some reading, this is not necessarily a good idea. I think it's a reasonable expectation to have the "serve" process occupy a terminal session or live in a long running multiplexer env (tmux, herdr, etc.)
 - [ ] Refine build functionality
-    + [ ] test and probably fix hyperlink functionality. May need to do some path replacement at build
-    + [ ] generate an index.html in target directory (will need to learn a little html)
+    + [x] test and probably fix hyperlink functionality. May need to do some path replacement at build
+        * used crude strings.CutPrefix implementation.
+        * Should probably handle it at the file server level in the mux.
+    + [x] implement extract title
+    + [ ] Get the title in to the directory tree and refine "printTree" function. 
+    + [x] generate an index.html in target directory (will need to learn a little html)
       + need to record and store documents and paths generated during the build step.
       + This will be a shared memory resource that will need mutex protection.
       + Use this record to generate hyperlinks in index.html
     + Brainstorm incremental build problem.
       + Specify directory or file?
       + Keep a database describing the state of the content directory and only update the modified parts?
-- [ ] Theming and CSS
+- [ ] Layout, CSS, and theming
     + Will need to learn enough CSS to make a few shitty themes
-    + Start with a generic one so there's something to test with
+    + [x] Start with a generic one so there's something to test with
+    + Add title bar and side bar to default and index templates
 
 That should be enough to get started. Check back later.
