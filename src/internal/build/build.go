@@ -39,6 +39,7 @@ func Build(c config.Config) error {
 	if !ok {
 		return errors.New("Invalid or missing configuration\n'sssg init' to initialize a project in the current directory\n")
 	}
+	// scan directory
 	docStore, dirTree, err := scanDirectory(c.SourcePath, c.TargetPath)
 	if err != nil {
 		return fmt.Errorf("Fatal error scanning source directory: %w\n", err)
@@ -118,14 +119,16 @@ func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode,
 				docs.mu.Lock()
 				docs.docs = append(docs.docs, doc)
 				docs.mu.Unlock()
-				fileNode := directoryNode{
-					name:  doc.title,
-					path:  itemTargetPath[:len(itemTargetPath)-len(ext)] + ".html",
-					isDir: false,
+				if item.Name() != "index.md" {
+					fileNode := directoryNode{
+						name:  doc.title,
+						path:  itemTargetPath[:len(itemTargetPath)-len(ext)] + ".html",
+						isDir: false,
+					}
+					dirTree.mu.Lock()
+					dirTree.children = append(dirTree.children, &fileNode)
+					dirTree.mu.Unlock()
 				}
-				dirTree.mu.Lock()
-				dirTree.children = append(dirTree.children, &fileNode)
-				dirTree.mu.Unlock()
 			}
 		})
 	}
@@ -182,7 +185,6 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 	var wg sync.WaitGroup
 	for _, doc := range documents {
 		wg.Go(func() {
-			// fmt.Println(c.SiteName)
 			htmlDoc := strings.Replace(string(template), "{{ Site Name }}", c.SiteName, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Title }}", doc.title, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Sidebar }}", treeString, 1)
