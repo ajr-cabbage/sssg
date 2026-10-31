@@ -14,7 +14,9 @@ type Config struct {
 	AssetPath    string `json:"asset_path"`
 	TemplatePath string `json:"template_path"`
 	ThemePath    string `json:"theme_path"`
+	Theme        string `json:"theme"`
 	Port         int    `json:"port"`
+	SiteName     string `json:"site_name"`
 }
 
 func GetConfig() (Config, bool, error) {
@@ -24,7 +26,9 @@ func GetConfig() (Config, bool, error) {
 		AssetPath:    "./assets/",
 		TemplatePath: "./templates/",
 		ThemePath:    "./themes/",
+		Theme:        "default.css",
 		Port:         8080,
+		SiteName:     "SSSG - The Small Shitty (Static) Site Generator",
 	}
 
 	_, err := os.Stat("config.json")
@@ -93,6 +97,18 @@ func SetConfig(c Config, key, val string) error {
 		if err != nil {
 			return err
 		}
+	case "theme":
+		c.Theme = val
+		err := WriteConfig(c)
+		if err != nil {
+			return err
+		}
+	case "site_name":
+		c.SiteName = val
+		err := WriteConfig(c)
+		if err != nil {
+			return err
+		}
 	case "port":
 		portNum, err := strconv.Atoi(val)
 		if err != nil {
@@ -121,6 +137,10 @@ func GetConfigValue(c Config, key string) any {
 		return c.TemplatePath
 	case "theme_path":
 		return c.ThemePath
+	case "theme":
+		return c.Theme
+	case "site_name":
+		return c.SiteName
 	case "port":
 		return c.Port
 	default:

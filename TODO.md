@@ -28,7 +28,7 @@
         * used crude strings.CutPrefix implementation.
         * Should probably handle it at the file server level in the mux.
     + [x] implement extract title
-    + [ ] Get the title in to the directory tree and refine "printTree" function. 
+    + [x] Get the title in to the directory tree and refine "printTree" function. 
     + [x] generate an index.html in target directory (will need to learn a little html)
       + need to record and store documents and paths generated during the build step.
       + This will be a shared memory resource that will need mutex protection.

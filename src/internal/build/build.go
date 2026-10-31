@@ -22,91 +22,71 @@ type directoryNode struct {
 	mu       sync.Mutex
 }
 
+type document struct {
+	title string
+	path  string
+	html  string
+}
+
+type documentStore struct {
+	docs []document
+	mu   sync.Mutex
+}
+
 func Build(c config.Config) error {
+	// verify config
 	ok := config.VerifyConfig(c)
 	if !ok {
 		return errors.New("Invalid or missing configuration\n'sssg init' to initialize a project in the current directory\n")
 	}
-	htmlTemplate, err := os.ReadFile(filepath.Join(c.TemplatePath, "default.html"))
+	docStore, dirTree, err := scanDirectory(c.SourcePath, c.TargetPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("Fatal error scanning source directory: %w\n", err)
 	}
-	targetTree, err := generateDirectory(c.SourcePath, filepath.Join(c.TargetPath), string(htmlTemplate))
-	err = copyAssets(c.AssetPath, c.TargetPath+"/assets/")
+	// write documents
+	err = writeDocuments(c, docStore.docs, dirTree)
 	if err != nil {
-		return err
+		return fmt.Errorf("Fatal error writing documents: %w\n", err)
 	}
-	indexTemplate, err := os.ReadFile(filepath.Join(c.TemplatePath, "index_template.html"))
+	// copy assets
+	err = copyAssets(c.AssetPath, filepath.Join(c.ThemePath, c.Theme), filepath.Join(c.TargetPath, "assets"))
 	if err != nil {
-		return err
-	}
-	err = generateIndex(targetTree, c.TargetPath, string(indexTemplate))
-	if err != nil {
-		return err
+		return fmt.Errorf("Fatal error copying assets: %w\n", err)
 	}
 	return nil
 }
 
-func copyAssets(sourceDirectory, targetDirectory string) error {
-	_, err := os.Stat(targetDirectory)
+func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode, error) {
+	_, err := os.Stat(targetDir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(targetDirectory, 0744)
+			err = os.MkdirAll(targetDir, 0744)
 			if err != nil {
-				return err
+				return &documentStore{}, &directoryNode{}, err
 			}
 		} else {
-			return err
+			return &documentStore{}, &directoryNode{}, err
 		}
 	}
-	sourceDirContents, err := os.ReadDir(sourceDirectory)
+	sourceDirContents, err := os.ReadDir(sourceDir)
 	if err != nil {
-		return err
+		return &documentStore{}, &directoryNode{}, err
 	}
-	for _, item := range sourceDirContents {
-		itemSourcePath := filepath.Join(sourceDirectory, item.Name())
-		itemTargetPath := filepath.Join(targetDirectory, item.Name())
-		if item.IsDir() {
-			copyAssets(itemSourcePath, itemTargetPath)
-		} else {
-			err := cp.CopyFile(itemSourcePath, itemTargetPath)
-			if err != nil {
-				fmt.Printf("Copy file error: %s\n", err.Error())
-			}
-		}
+	docs := documentStore{
+		docs: []document{},
 	}
-	return nil
-}
-
-func generateDirectory(sourceDirectory, targetDirectory, template string) (*directoryNode, error) {
-	_, err := os.Stat(targetDirectory)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(targetDirectory, 0744)
-			if err != nil {
-				return &directoryNode{}, err
-			}
-		} else {
-			return &directoryNode{}, err
-		}
-	}
-	sourceDirContents, err := os.ReadDir(sourceDirectory)
-	if err != nil {
-		return &directoryNode{}, err
-	}
-
 	dirTree := directoryNode{
 		name:  "root",
-		path:  targetDirectory,
+		path:  targetDir,
 		isDir: true,
 	}
 	var wg sync.WaitGroup
 	for _, item := range sourceDirContents {
 		wg.Go(func() {
-			itemSourcePath := filepath.Join(sourceDirectory, item.Name())
-			itemTargetPath := filepath.Join(targetDirectory, item.Name())
+			itemSourcePath := filepath.Join(sourceDir, item.Name())
+			itemTargetPath := filepath.Join(targetDir, item.Name())
 			if item.IsDir() {
-				subTree, err := generateDirectory(itemSourcePath, itemTargetPath, template)
+				subDocs, subTree, err := scanDirectory(itemSourcePath, itemTargetPath)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -117,59 +97,58 @@ func generateDirectory(sourceDirectory, targetDirectory, template string) (*dire
 				dirTree.mu.Lock()
 				dirTree.children = append(dirTree.children, subTree)
 				dirTree.mu.Unlock()
+				subDocs.mu.Lock()
+				for _, doc := range subDocs.docs {
+					docs.mu.Lock()
+					docs.docs = append(docs.docs, doc)
+					docs.mu.Unlock()
+				}
+				subDocs.mu.Unlock()
 			} else {
 				ext := filepath.Ext(itemSourcePath)
 				if strings.ToLower(ext) != ".md" {
 					fmt.Printf("Invalid file ext {%s} for: %s", ext, itemSourcePath)
 					return
 				}
+				doc, err := processDocument(itemSourcePath, itemTargetPath[:len(itemTargetPath)-len(ext)])
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				docs.mu.Lock()
+				docs.docs = append(docs.docs, doc)
+				docs.mu.Unlock()
 				fileNode := directoryNode{
-					name:  item.Name()[:len(item.Name())-len(ext)],
+					name:  doc.title,
 					path:  itemTargetPath[:len(itemTargetPath)-len(ext)] + ".html",
 					isDir: false,
 				}
 				dirTree.mu.Lock()
 				dirTree.children = append(dirTree.children, &fileNode)
 				dirTree.mu.Unlock()
-				err := generatePage(itemSourcePath, itemTargetPath[:len(itemTargetPath)-len(ext)], template)
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
 			}
 		})
 	}
 	wg.Wait()
-	return &dirTree, nil
+	return &docs, &dirTree, nil
 }
 
-func generatePage(contentPath, targetPath, template string) error {
-	md, err := os.ReadFile(contentPath)
+func processDocument(documentPath, targetPath string) (document, error) {
+	md, err := os.ReadFile(documentPath)
 	if err != nil {
-		return err
+		return document{}, fmt.Errorf("Error reading document '%s': %w\n", documentPath, err)
 	}
 	title := getTitle(string(md))
 	html, err := mdToHTML(md)
 	if err != nil {
-		return err
+		return document{}, fmt.Errorf("Error converting md to html: %w", err)
 	}
-	htmlDoc := strings.Replace(template, "{{ Title }}", title, 1)
-	htmlDoc = strings.Replace(htmlDoc, "{{ Content }}", html, 1)
-	err = os.WriteFile(targetPath+".html", []byte(htmlDoc), 0644)
-	if err != nil {
-		return err
+	doc := document{
+		title: title,
+		path:  targetPath + ".html",
+		html:  html,
 	}
-	return nil
-}
-
-func generateIndex(tree *directoryNode, targetPath, template string) error {
-	treeString := printTree(tree)
-	indexHTML := strings.Replace(template, "{{ Content }}", treeString, 1)
-	err := os.WriteFile(filepath.Join(targetPath, "index.html"), []byte(indexHTML), 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+	return doc, nil
 }
 
 func mdToHTML(md []byte) (string, error) {
@@ -193,23 +172,48 @@ func getTitle(md string) string {
 	return "Untitled"
 }
 
+func writeDocuments(c config.Config, documents []document, tree *directoryNode) error {
+	// fmt.Println(len(documents))
+	template, err := os.ReadFile(filepath.Join(c.TemplatePath, "index_template.html"))
+	if err != nil {
+		return fmt.Errorf("Error reading HTML template: %w", err)
+	}
+	treeString := printTree(tree)
+	var wg sync.WaitGroup
+	for _, doc := range documents {
+		wg.Go(func() {
+			// fmt.Println(c.SiteName)
+			htmlDoc := strings.Replace(string(template), "{{ Site Name }}", c.SiteName, 1)
+			htmlDoc = strings.Replace(htmlDoc, "{{ Title }}", doc.title, 1)
+			htmlDoc = strings.Replace(htmlDoc, "{{ Sidebar }}", treeString, 1)
+			htmlDoc = strings.Replace(htmlDoc, "{{ Content }}", doc.html, 1)
+			err = os.WriteFile(doc.path, []byte(htmlDoc), 0644)
+			if err != nil {
+				fmt.Printf("Error writing '%s': %s", doc.path, err.Error())
+			}
+		})
+	}
+	wg.Wait()
+	return nil
+}
+
 func printTree(node *directoryNode) string {
 	var treeString string
 	if !node.isDir {
 		trimmedPath, ok := strings.CutPrefix(node.path, "target/")
 		if ok {
-			treeString += fmt.Sprintf(`<p> - <a href="%s">%s</a></p>`, trimmedPath, node.name)
+			treeString += fmt.Sprintf(`<li><a href="/%s">%s</a></li>`, trimmedPath, node.name)
 		} else {
-			treeString += fmt.Sprintf(`<p> - <a href="%s">%s</a></p>`, node.path, node.name)
+			treeString += fmt.Sprintf(`<li><a href="/%s">%s</a></li>`, node.path, node.name)
 		}
 		return treeString
 	}
 	if node.children == nil {
-		treeString += fmt.Sprintf("<h3># %s</h3>", node.name)
+		treeString += fmt.Sprintf(`<h2 class="sidebar__heading">%s</h2>`, node.name)
 		return treeString
 	}
 	if node.name != "root" {
-		treeString += fmt.Sprintf("<h3># %s</h3>", node.name)
+		treeString += fmt.Sprintf(`<h2 class="sidebar__heading">%s</h2>`, node.name)
 	}
 	node.mu.Lock()
 	for _, child := range node.children {
@@ -217,4 +221,51 @@ func printTree(node *directoryNode) string {
 	}
 	node.mu.Unlock()
 	return treeString
+}
+
+func copyAssets(assetSource, cssSource, assetTarget string) error {
+	_, err := os.Stat(assetTarget)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = os.MkdirAll(assetTarget, 0744)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+	sourceDirContents, err := os.ReadDir(assetSource)
+	if err != nil {
+		return err
+	}
+	for _, item := range sourceDirContents {
+		itemSourcePath := filepath.Join(assetSource, item.Name())
+		itemTargetPath := filepath.Join(assetTarget, item.Name())
+		if item.IsDir() {
+			copyAssets(itemSourcePath, itemTargetPath, cssSource)
+		} else {
+			err := cp.CopyFile(itemSourcePath, itemTargetPath)
+			if err != nil {
+				fmt.Printf("Copy file error: %s\n", err.Error())
+			}
+		}
+	}
+	// Copy theme css file to target assset directory.
+	// Print, but do not return errors. Not critical if theme is not copied.
+	_, err = os.Stat(cssSource)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Printf("Theme missing: %s\n", cssSource)
+			return nil
+		}
+		fmt.Printf("Error reading theme: %s\n", err.Error())
+		return nil
+	}
+	err = cp.CopyFile(cssSource, filepath.Join(assetTarget, "index.css"))
+	if err != nil {
+		fmt.Printf("Error copying theme: %s\n", err.Error())
+	}
+
+	return nil
 }
