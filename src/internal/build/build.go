@@ -176,8 +176,7 @@ func getTitle(md string) string {
 }
 
 func writeDocuments(c config.Config, documents []document, tree *directoryNode) error {
-	// fmt.Println(len(documents))
-	template, err := os.ReadFile(filepath.Join(c.TemplatePath, "index_template.html"))
+	template, err := os.ReadFile(filepath.Join(c.TemplatePath, "default.html"))
 	if err != nil {
 		return fmt.Errorf("Error reading HTML template: %w", err)
 	}

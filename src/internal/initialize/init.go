@@ -37,7 +37,15 @@ func Initialize() error {
 	if err != nil {
 		return err
 	}
+	err = os.WriteFile("shitty-default.html", []byte(HTMLTEMPLATE), 0644)
+	if err != nil {
+		return err
+	}
 	err = os.MkdirAll(conf.ThemePath, 0744)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile("shitty-default.css", []byte(CSSDEFAULT), 0644)
 	if err != nil {
 		return err
 	}
