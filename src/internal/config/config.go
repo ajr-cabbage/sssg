@@ -26,7 +26,7 @@ func GetConfig() (Config, bool, error) {
 		AssetPath:    "./assets/",
 		TemplatePath: "./templates/",
 		ThemePath:    "./themes/",
-		Theme:        "default.css",
+		Theme:        "shitty-default.css",
 		Port:         8080,
 		SiteName:     "SSSG - The Small Shitty (Static) Site Generator",
 	}

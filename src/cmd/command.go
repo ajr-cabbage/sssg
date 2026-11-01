@@ -71,5 +71,16 @@ If no flags are provided, it will be served on the port in config.json.
 If -p is supplied, the port will be overridden by the argument.
 if -d is supplied, the server will run in detatched mode.`,
 	}
+	commands["theme"] = Command{
+		Name:        "theme",
+		Description: "Hot swap the theme.",
+		Callback:    themeCommand,
+		Help: `
+'sssg theme <theme-name>'
+Change the theme live without needing to re-build the site.
+This will modify the config.json and move the selected theme
+into the target/assets directory. Just refresh the page to
+see changes.`,
+	}
 	return commands
 }

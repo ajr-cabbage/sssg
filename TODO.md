@@ -16,13 +16,11 @@
       + [x] main help
       + [x] command help
     + [x] skeleton "serve"
+    + [x] "theme" command
 - [ ] HTTP Server
     + [x] only GET on root of target folder - just doing file server to start
     + [x] wire in "serve" command
-    + [ ] **ABANDONED** implement "detatch" flag
-      + want to be able to detatch using command flag or with keystroke if flag is forgotten
-      + do it natively in the application, so this can be cross platform
-      + NOTE: after some reading, this is not necessarily a good idea. I think it's a reasonable expectation to have the "serve" process occupy a terminal session or live in a long running multiplexer env (tmux, herdr, etc.)
+    + **ABANDONED** implement "detatch" flag - not advised for futur production use
 - [ ] Refine build functionality
     + [x] test and probably fix hyperlink functionality. May need to do some path replacement at build
         * used crude strings.CutPrefix implementation.
@@ -36,9 +34,9 @@
     + Brainstorm incremental build problem.
       + Specify directory or file?
       + Keep a database describing the state of the content directory and only update the modified parts?
-- [ ] Layout, CSS, and theming
+- [x] Layout, CSS, and theming
     + Will need to learn enough CSS to make a few shitty themes
     + [x] Start with a generic one so there's something to test with
-    + Add title bar and side bar to default and index templates
+    + [x] Add title bar and side bar to default and index templates
 
 That should be enough to get started. Check back later.
