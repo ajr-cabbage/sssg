@@ -209,7 +209,7 @@ func printTree(node *directoryNode) string {
 		}
 		return treeString
 	}
-	if node.children == nil {
+	if node.children == nil && node.name != "root" {
 		treeString += fmt.Sprintf(`<h2 class="sidebar__heading">%s</h2>`, node.name)
 		return treeString
 	}
