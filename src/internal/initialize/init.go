@@ -3,6 +3,7 @@ package initialize
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/ajr-cabbage/sssg/src/internal/config"
 )
@@ -37,7 +38,7 @@ func Initialize() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile("shitty-default.html", []byte(HTMLTEMPLATE), 0644)
+	err = os.WriteFile(filepath.Join(conf.TemplatePath, "shitty-default.html"), []byte(HTMLTEMPLATE), 0644)
 	if err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func Initialize() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile("shitty-default.css", []byte(CSSDEFAULT), 0644)
+	err = os.WriteFile(filepath.Join(conf.ThemePath, "shitty-default.css"), []byte(CSSDEFAULT), 0644)
 	if err != nil {
 		return err
 	}
