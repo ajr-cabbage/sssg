@@ -2,10 +2,12 @@ package build
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -92,6 +94,9 @@ func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode,
 					fmt.Println(err)
 					return
 				}
+				slices.SortFunc(subTree.children, func(a, b *directoryNode) int {
+					return cmp.Compare(a.name, b.name)
+				})
 				subTree.isDir = true
 				subTree.name = item.Name()
 				subTree.path = itemTargetPath
@@ -133,6 +138,9 @@ func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode,
 		})
 	}
 	wg.Wait()
+	slices.SortFunc(dirTree.children, func(a, b *directoryNode) int {
+		return cmp.Compare(a.name, b.name)
+	})
 	return &docs, &dirTree, nil
 }
 
@@ -181,6 +189,9 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 		return fmt.Errorf("Error reading HTML template: %w", err)
 	}
 	treeString := printTree(tree)
+	if treeString == "" {
+		treeString += `<li><a href="/">HOME</a></li>`
+	}
 	var wg sync.WaitGroup
 	for _, doc := range documents {
 		wg.Go(func() {

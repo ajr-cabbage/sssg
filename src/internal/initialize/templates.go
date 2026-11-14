@@ -16,7 +16,9 @@ const HTMLTEMPLATE string = `<!DOCTYPE html>
   </header>
   <div class="layout">
     <aside class="sidebar">
-      <ul class="sidebar__list">{{ Sidebar }}</ul>
+      <ul class="sidebar__list">
+      {{ Sidebar }}
+      </ul>
     </aside>
     <main class="content">
       {{ Content }}
@@ -39,26 +41,26 @@ const CSSDEFAULT string = `/* Shitty Default Theme */
 }
 
 :root {
-  /* Solarized palette */
-  --sz-bg: #58594f;
-  --sz-surface: #41423b;
+  --sd-bg: #292825;
+  --sd-surface: #41423b;
   --sz-overlay: #586e75;
-  --sz-text: #bfa1ff;
-  --sz-muted: #9983c9;
-  --sz-red: #dc322f;
-  --sz-green: #859900;
-  --sz-yellow: #b58900;
-  --sz-blue: #268bd2;
-  --sz-violet: #6c71c4;
-  --sz-cyan: #2aa198;
+  --sd-text: #dbdbcc;
+  --sd-muted: #9983c9;
+  --sz-green: #a0b400;
+  --sz-yellow: #c59900;
+  --sz-yellow-dark: #dedda6;
+  --sd-violet: #6c71c4;
 
-  --color-bg: var(--sz-bg);
-  --color-surface: var(--sz-surface);
-  --color-overlay: var(--sz-overlay);
-  --color-text: var(--sz-text);
-  --color-text-muted: var(--sz-muted);
-  --color-accent: var(--sz-blue);
+  --color-bg: var(--sd-bg);
+  --color-surface: var(--sd-surface);
+  --color-overlay: var(--sd-bg);
+  --color-text: var(--sd-text);
+  --color-text-muted: var(--sd-muted);
+  --color-accent: var(--sd-violet);
   --color-accent-alt: var(--sz-violet);
+  --color-code: var(--sz-green);
+  --color-title: var(--sz-yellow);
+  --color-title-muted: var(--sz-yellow-dark);
   --color-border: var(--sz-overlay);
   --title-bar-height: 56px;
 }
@@ -97,7 +99,7 @@ a:hover {
 .title-bar__title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--c);
 }
 
 .title-bar__nav {
@@ -107,7 +109,7 @@ a:hover {
 }
 
 .title-bar__nav a {
-  color: var(--color-text-muted);
+  color: var(--color-title);
   font-weight: 500;
 }
 
@@ -120,7 +122,7 @@ a:hover {
 .layout {
   display: flex;
   align-items: flex-start;
-  max-width: 1100px;
+  max-width: 1500px;
   margin: 1.5rem auto;
   gap: 1.5rem;
   padding: 0 1rem;
@@ -129,12 +131,13 @@ a:hover {
 /* Sidebar */
 .sidebar {
   position: sticky;
-  top: 0; /* sits below the sticky title bar */
+  top: 0;
   flex: 0 0 250px;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  /*border-radius: 4px;*/
   padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   overflow-y: visible;
 }
 
@@ -142,7 +145,7 @@ a:hover {
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-muted);
+  color: var(--color-title-muted);
   margin-bottom: 0.75rem;
 }
 
@@ -157,7 +160,7 @@ a:hover {
 .sidebar__list a {
   display: block;
   padding: 0.25rem 0.25rem;
-  border-radius: 4px;
+  /*border-radius: 4px;*/
   color: var(--color-text);
 }
 
@@ -173,20 +176,32 @@ a:hover {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  padding-left: 25px;
 }
 
-.content__section {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1.25rem 1.5rem;
+.content h1 {
+    font-size: 2rem;
+    color: var(--color-title)
 }
 
-.content__section h2 {
-  font-size: 1.15rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-accent-alt);
+.content h2 {
+    color: var(--color-title-muted)
+}
+
+.content
+ul ul,
+ul ol,
+ol ul,
+ol ol {
+    padding-left: 20px;
+    margin-left: 0px;
+}
+
+.content code {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-code);
 }
 
 /* Footer */
