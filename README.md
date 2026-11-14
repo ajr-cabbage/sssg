@@ -23,8 +23,6 @@ sssg <command> -<options> <parameters>
     + get <key> - print config value to the console
 - ```sssg serve```
     + no flags - serve your target directory over http on the port specified in config.json
-    + -p <port-num> - override the default port
-    + -d - start server deteched from current shell session
 - ```ssssg theme```
     + <theme-name.css> - change themes live - no server restart requried
 - ```sssg help```

@@ -94,9 +94,6 @@ func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode,
 					fmt.Println(err)
 					return
 				}
-				slices.SortFunc(subTree.children, func(a, b *directoryNode) int {
-					return cmp.Compare(a.name, b.name)
-				})
 				subTree.isDir = true
 				subTree.name = item.Name()
 				subTree.path = itemTargetPath
