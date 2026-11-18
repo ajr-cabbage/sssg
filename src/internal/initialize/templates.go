@@ -43,12 +43,12 @@ const CSSDEFAULT string = `/* Shitty Default Theme */
 :root {
   --sd-bg: #292825;
   --sd-surface: #41423b;
-  --sz-overlay: #586e75;
+  --sd-overlay: #586e75;
   --sd-text: #dbdbcc;
   --sd-muted: #9983c9;
-  --sz-green: #a0b400;
-  --sz-yellow: #c59900;
-  --sz-yellow-dark: #dedda6;
+  --sd-green: #a0b400;
+  --sd-yellow: #c59900;
+  --sd-yellow-dark: #dedda6;
   --sd-violet: #6c71c4;
 
   --color-bg: var(--sd-bg);
@@ -57,11 +57,11 @@ const CSSDEFAULT string = `/* Shitty Default Theme */
   --color-text: var(--sd-text);
   --color-text-muted: var(--sd-muted);
   --color-accent: var(--sd-violet);
-  --color-accent-alt: var(--sz-violet);
-  --color-code: var(--sz-green);
-  --color-title: var(--sz-yellow);
-  --color-title-muted: var(--sz-yellow-dark);
-  --color-border: var(--sz-overlay);
+  --color-accent-alt: var(--sd-violet);
+  --color-code: var(--sd-green);
+  --color-title: var(--sd-yellow);
+  --color-title-muted: var(--sd-yellow-dark);
+  --color-border: var(--sd-overlay);
   --title-bar-height: 56px;
 }
 
@@ -99,7 +99,7 @@ a:hover {
 .title-bar__title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--c);
+  color: var(--color-title);
 }
 
 .title-bar__nav {

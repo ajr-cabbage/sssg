@@ -21,7 +21,7 @@
     + [x] only GET on root of target folder - just doing file server to start
     + [x] wire in "serve" command
     + **ABANDONED** implement "detatch" flag - not advised for futur production use
-    + [ ] add "-p" flag or just do it as another parameter
+    + [x] add "-p" flag or just do it as another parameter
 - [x] Refine build functionality
     + [x] test and probably fix hyperlink functionality. May need to do some path replacement at build
         * used crude strings.CutPrefix implementation.
@@ -38,5 +38,3 @@
     + [x] Start with a generic one so there's something to test with
     + [x] Add title bar and side bar to default and index templates
     + [ ] Make and package a couple of well known color themes
-
-That should be enough to get started. Check back later.

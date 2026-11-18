@@ -8,7 +8,7 @@ There are a bunch of wonderful site generators out there, but I want one that ma
 - Requirements:
     + go 1.26+
     + goldmark - ```go get github.com/yuin/goldmark```
-- Clone the repo and ```go build .```
+- Clone the repo, ```cd src/``` and ```go build -o ~/go/bin/sssg```
 - See 'Configuration' for first time setup
 
 ## Usage
@@ -17,17 +17,18 @@ sssg <command> -<options> <parameters>
     + initialize a site project in the current directory with application default configuration
 - ```sssg build```
     + no flags - build all markdown in the content directory
-    + -f <filename.md> - build only the specified markdown file
+    + ```-f <filename.md>``` - build only the specified markdown file
 - ```sssg config```
-    + set <key> <value> - modify config.json through via cli
-    + get <key> - print config value to the console
+    + ```set <key> <value>``` - modify config.json through via cli
+    + ```get <key>``` - print config value to the console
 - ```sssg serve```
     + no flags - serve your target directory over http on the port specified in config.json
+    + ```-p <port>``` - serve on the specified port, overriding the configuration
 - ```ssssg theme```
-    + <theme-name.css> - change themes live - no server restart requried
+    + ```<theme-name.css>``` - change themes live - no server restart requried
 - ```sssg help```
     + no params - list available commands with description
-    + <command> - show command usage
+    + ```<command>``` - show command usage
 
 ## Configuration
 config.json - modify directly or edit single values via cli
