@@ -39,6 +39,6 @@
     + [x] Add title bar and side bar to default and index templates
     + [ ] Make and package a couple of well known color themes
 - Add to configuration
-    + [ ] Add "basepath" or similar field to the config. When publishing to gihub pages paths are all mucked up. Being able to add "/_repo-name_/" to every src and href should fix it.
+    + [x] Add "basepath" or similar field to the config. When publishing to gihub pages paths are all mucked up. Being able to add "/_repo-name_/" to every src and href should fix it.
       + default config
       + writeDocuments func

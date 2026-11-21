@@ -1,5 +1,5 @@
-# sssg
-The Small, Shitty, (static) Site Generator
+# _SSSG_
+[The Small, Shitty, (static) Site Generator](https://ajr-cabbage.github.io/sssg-site/)
 
 ## Motivation
 There are a bunch of wonderful site generators out there, but I want one that makes writing and publishing the focus. No fluff, no features, just a way to take your thoughts and push it to your very own website. It was the dream of the internet when I was young, and it would be nice to capture that creativity without any crap coming with it. Those sites I made as a kid were shitty. This site generator is also shitty, and I love it dearly. This was created with my kids in mind. When they are old enough to write, they can make their own sites. As they learn more, they can accomplish more.

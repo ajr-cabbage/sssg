@@ -17,6 +17,7 @@ type Config struct {
 	Theme        string `json:"theme"`
 	Port         int    `json:"port"`
 	SiteName     string `json:"site_name"`
+	BasePath     string `json:"base_path"`
 }
 
 func GetConfig() (Config, bool, error) {
@@ -29,6 +30,7 @@ func GetConfig() (Config, bool, error) {
 		Theme:        "shitty-default.css",
 		Port:         8080,
 		SiteName:     "SSSG - The Small Shitty (Static) Site Generator",
+		BasePath:     "/",
 	}
 
 	_, err := os.Stat("config.json")
@@ -116,6 +118,12 @@ func SetConfig(c Config, key, val string) error {
 		}
 		c.Port = portNum
 		err = WriteConfig(c)
+		if err != nil {
+			return err
+		}
+	case "base_path":
+		c.BasePath = val
+		err := WriteConfig(c)
 		if err != nil {
 			return err
 		}

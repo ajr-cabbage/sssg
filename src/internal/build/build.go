@@ -185,7 +185,7 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 	if err != nil {
 		return fmt.Errorf("Error reading HTML template: %w", err)
 	}
-	treeString := printTree(tree)
+	treeString := printTree(tree, c)
 	if treeString == "" {
 		treeString += `<li><a href="/">HOME</a></li>`
 	}
@@ -196,6 +196,8 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 			htmlDoc = strings.Replace(htmlDoc, "{{ Title }}", doc.title, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Sidebar }}", treeString, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Content }}", doc.html, 1)
+			htmlDoc = strings.Replace(htmlDoc, "href=\"/", fmt.Sprintf("href=\"%s", c.BasePath), -1)
+			htmlDoc = strings.Replace(htmlDoc, "src=\"/", fmt.Sprintf("src=\"%s", c.BasePath), -1)
 			err = os.WriteFile(doc.path, []byte(htmlDoc), 0644)
 			if err != nil {
 				fmt.Printf("Error writing '%s': %s", doc.path, err.Error())
@@ -206,10 +208,10 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 	return nil
 }
 
-func printTree(node *directoryNode) string {
+func printTree(node *directoryNode, c config.Config) string {
 	var treeString string
 	if !node.isDir {
-		trimmedPath, ok := strings.CutPrefix(node.path, "target/")
+		trimmedPath, ok := strings.CutPrefix(node.path, c.TargetPath[2:])
 		if ok {
 			treeString += fmt.Sprintf(`<li><a href="/%s">%s</a></li>`, trimmedPath, node.name)
 		} else {
@@ -226,7 +228,7 @@ func printTree(node *directoryNode) string {
 	}
 	node.mu.Lock()
 	for _, child := range node.children {
-		treeString += printTree(child)
+		treeString += printTree(child, c)
 	}
 	node.mu.Unlock()
 	return treeString
