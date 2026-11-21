@@ -16,8 +16,7 @@ sssg <command> -<options> <parameters>
 - ```sssg init```
     + initialize a site project in the current directory with application default configuration
 - ```sssg build```
-    + no flags - build all markdown in the content directory
-    + ```-f <filename.md>``` - build only the specified markdown file
+    + build all markdown in the content directory
 - ```sssg config```
     + ```set <key> <value>``` - modify config.json through via cli
     + ```get <key>``` - print config value to the console
