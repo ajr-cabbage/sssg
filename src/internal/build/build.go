@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/ajr-cabbage/sssg/src/internal/config"
-	cp "github.com/nmrshll/go-cp"
 	"github.com/yuin/goldmark"
 )
 
@@ -68,6 +68,15 @@ func scanDirectory(sourceDir, targetDir string) (*documentStore, *directoryNode,
 				return &documentStore{}, &directoryNode{}, err
 			}
 		} else {
+			return &documentStore{}, &directoryNode{}, err
+		}
+	} else {
+		err = os.RemoveAll(targetDir)
+		if err != nil {
+			return &documentStore{}, &directoryNode{}, fmt.Errorf("Error clearing target dir: %w", err)
+		}
+		err = os.MkdirAll(targetDir, 0744)
+		if err != nil {
 			return &documentStore{}, &directoryNode{}, err
 		}
 	}
@@ -185,10 +194,8 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 	if err != nil {
 		return fmt.Errorf("Error reading HTML template: %w", err)
 	}
-	treeString := printTree(tree, c)
-	if treeString == "" {
-		treeString += `<li><a href="/">HOME</a></li>`
-	}
+	treeString := `<li><a href="/">HOME</a></li>`
+	treeString += printTree(tree, c)
 	var wg sync.WaitGroup
 	for _, doc := range documents {
 		wg.Go(func() {
@@ -196,8 +203,8 @@ func writeDocuments(c config.Config, documents []document, tree *directoryNode) 
 			htmlDoc = strings.Replace(htmlDoc, "{{ Title }}", doc.title, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Sidebar }}", treeString, 1)
 			htmlDoc = strings.Replace(htmlDoc, "{{ Content }}", doc.html, 1)
-			htmlDoc = strings.Replace(htmlDoc, "href=\"/", fmt.Sprintf("href=\"%s", c.BasePath), -1)
-			htmlDoc = strings.Replace(htmlDoc, "src=\"/", fmt.Sprintf("src=\"%s", c.BasePath), -1)
+			htmlDoc = strings.ReplaceAll(htmlDoc, "href=\"/", fmt.Sprintf("href=\"%s", c.BasePath))
+			htmlDoc = strings.ReplaceAll(htmlDoc, "src=\"/", fmt.Sprintf("src=\"%s", c.BasePath))
 			err = os.WriteFile(doc.path, []byte(htmlDoc), 0644)
 			if err != nil {
 				fmt.Printf("Error writing '%s': %s", doc.path, err.Error())
@@ -235,32 +242,10 @@ func printTree(node *directoryNode, c config.Config) string {
 }
 
 func copyAssets(assetSource, cssSource, assetTarget string) error {
-	_, err := os.Stat(assetTarget)
+	sourceFS := os.DirFS(assetSource)
+	err := os.CopyFS(assetTarget, sourceFS)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			err = os.MkdirAll(assetTarget, 0744)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-	sourceDirContents, err := os.ReadDir(assetSource)
-	if err != nil {
-		return err
-	}
-	for _, item := range sourceDirContents {
-		itemSourcePath := filepath.Join(assetSource, item.Name())
-		itemTargetPath := filepath.Join(assetTarget, item.Name())
-		if item.IsDir() {
-			copyAssets(itemSourcePath, itemTargetPath, cssSource)
-		} else {
-			err := cp.CopyFile(itemSourcePath, itemTargetPath)
-			if err != nil {
-				fmt.Printf("Copy file error: %s\n", err.Error())
-			}
-		}
+		return fmt.Errorf("Error copying assets: %w", err)
 	}
 	// Copy theme css file to target assset directory.
 	// Print, but do not return errors. Not critical if theme is not copied.
@@ -273,10 +258,27 @@ func copyAssets(assetSource, cssSource, assetTarget string) error {
 		fmt.Printf("Error reading theme: %s\n", err.Error())
 		return nil
 	}
-	err = cp.CopyFile(cssSource, filepath.Join(assetTarget, "index.css"))
+	err = copyFile(cssSource, filepath.Join(assetTarget, "index.css"))
 	if err != nil {
 		fmt.Printf("Error copying theme: %s\n", err.Error())
 	}
-
 	return nil
+}
+
+func copyFile(src, dest string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("Cannot open file '%s': %w", src, err)
+	}
+	defer srcFile.Close()
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return fmt.Errorf("Cannot create file '%s': %w", dest, err)
+	}
+	defer destFile.Close()
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return fmt.Errorf("Error copying '%s' to '%s': %w", src, dest, err)
+	}
+	return destFile.Close()
 }
