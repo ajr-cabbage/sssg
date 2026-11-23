@@ -151,6 +151,8 @@ func GetConfigValue(c Config, key string) any {
 		return c.SiteName
 	case "port":
 		return c.Port
+	case "base_path":
+		return c.BasePath
 	default:
 		return ""
 	}
