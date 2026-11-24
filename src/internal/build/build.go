@@ -5,7 +5,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -13,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/ajr-cabbage/sssg/src/internal/config"
+	"github.com/ajr-cabbage/sssg/src/internal/copy"
 	"github.com/yuin/goldmark"
 )
 
@@ -258,27 +258,9 @@ func copyAssets(assetSource, cssSource, assetTarget string) error {
 		fmt.Printf("Error reading theme: %s\n", err.Error())
 		return nil
 	}
-	err = copyFile(cssSource, filepath.Join(assetTarget, "index.css"))
+	err = copy.CopyFile(cssSource, filepath.Join(assetTarget, "index.css"))
 	if err != nil {
 		fmt.Printf("Error copying theme: %s\n", err.Error())
 	}
 	return nil
-}
-
-func copyFile(src, dest string) error {
-	srcFile, err := os.Open(src)
-	if err != nil {
-		return fmt.Errorf("Cannot open file '%s': %w", src, err)
-	}
-	defer srcFile.Close()
-	destFile, err := os.Create(dest)
-	if err != nil {
-		return fmt.Errorf("Cannot create file '%s': %w", dest, err)
-	}
-	defer destFile.Close()
-	_, err = io.Copy(destFile, srcFile)
-	if err != nil {
-		return fmt.Errorf("Error copying '%s' to '%s': %w", src, dest, err)
-	}
-	return destFile.Close()
 }

@@ -8,7 +8,7 @@ import (
 	"slices"
 
 	"github.com/ajr-cabbage/sssg/src/internal/config"
-	cp "github.com/nmrshll/go-cp"
+	"github.com/ajr-cabbage/sssg/src/internal/copy"
 )
 
 func UpdateTheme(c config.Config, theme string) error {
@@ -19,7 +19,7 @@ func UpdateTheme(c config.Config, theme string) error {
 	if !slices.Contains(availableThemes, theme) {
 		return errors.New("Invalid theme name.")
 	}
-	err = cp.CopyFile(filepath.Join(c.ThemePath, theme+".css"), filepath.Join(c.TargetPath, "assets", "index.css"))
+	err = copy.CopyFile(filepath.Join(c.ThemePath, theme+".css"), filepath.Join(c.TargetPath, "assets", "index.css"))
 	if err != nil {
 		return fmt.Errorf("Error copying theme: %w\n", err)
 	}
